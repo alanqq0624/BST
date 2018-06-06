@@ -3,33 +3,49 @@
 #include <cstdlib>
 #include <ctime>
 #include <queue>
+#include <string>
+#include <iomanip>
 using namespace std;
 
 //define node type in tree
+//init level and width for convenience printout
 struct Node
 {
     int value;
     struct Node *left = NULL;
     struct Node *right = NULL;
+    int level = 0;
+    long long int width = 0;
 };
 typedef struct Node node;
 
-//use to count a specific value 
-//input:  n 
-//output: 2^(n-1)-1
-int power_sp(int n){
+//just a integer power with postitive power
+//output: base^(power)
+int power(int base, int power)
+{
     int ans = 1;
-    for(int i = 0; i < n-1; i++)
-        ans *= 2; 
-    return --ans;
+    for (int i = 0; i < power; i++)
+        ans *= base;
+    return ans;
 }
 
-//save tree(linked list form) , total number in tree, level of tree in global  
+//use to count a specific value
+//input:  n
+//output: 2^(n-1)-1
+int power_sp(int n)
+{
+    return power(2, n - 1);
+}
+
+//save tree(linked list form) , total number in tree, level of tree in global
 node *head = NULL;
 int number_node = 0;
 int level_tree = 0;
 
-void insertNode(node *current, int value)
+//insertnode
+//level and width for save postion in tree in node
+//level and width have a default value 1 for check from head
+void insertNode(node *current, int value, int level = 1, int width = 1)
 {
     if (value < current->value)
     {
@@ -37,10 +53,15 @@ void insertNode(node *current, int value)
         {
             current->left = new node;
             current->left->value = value;
+            current->left->width = 2 * width - 1;
+            current->left->level = ++level;
             return;
         }
         else
-            insertNode(current->left, value);
+        {
+            level++;
+            insertNode(current->left, value, level, 2 * (level - 1) - 1);
+        }
     }
     else if (value > current->value)
     {
@@ -48,10 +69,15 @@ void insertNode(node *current, int value)
         {
             current->right = new node;
             current->right->value = value;
+            current->right->width = 2 * width;
+            current->right->level = ++level;
             return;
         }
         else
-            insertNode(current->right, value);
+        {
+            level++;
+            insertNode(current->right, value, level, 2 * (level - 1));
+        }
     }
     else //value == currrent->value
         return;
@@ -78,8 +104,32 @@ int getLevel(node *cur_node)
     }
 }
 
-void drawTree(node *current){
-    
+//unit space is 2 char (because every node have maxninum 2 number)
+void drawTree(queue<node *> list)
+{
+    int total_level = getLevel(head);
+
+    for (int level = 1; level <= total_level; level++)
+    {
+        
+        if(level != total_level)//deal with special case for leaf level
+            cout << string(power_sp((total_level + 1) - level) * 2, '_');
+
+        for (int width = 1; width <= power(2, level - 1); width++)
+        {
+            if (list.empty() || list.front()->width != width || list.front()->level != level)
+                cout << "  ";
+            else
+            {
+                cout << setw(2) << list.front()->value;
+                list.pop();
+            }
+            if (width == power(2, level - 1))
+                break;
+            cout << string(power_sp((total_level + 1) - level + 1) * 2, '_');
+        }
+        cout << endl;
+    }
 };
 
 //print out data in preorder form
@@ -129,6 +179,28 @@ void bfs(node *current)
     }
 };
 
+void bfs(node *current, queue<node *> &output)
+{
+    queue<node *> bfs_q;
+    bfs_q.push(head);
+    output.push(head);
+
+    while (!bfs_q.empty())
+    {
+        if (bfs_q.front()->left != NULL)
+        {
+            bfs_q.push(bfs_q.front()->left);
+            output.push(bfs_q.front()->left);
+        }
+        if (bfs_q.front()->right != NULL)
+        {
+            bfs_q.push(bfs_q.front()->right);
+            output.push(bfs_q.front()->right);
+        }
+        bfs_q.pop();
+    }
+}
+
 int main(int argc, char const *argv[])
 {
     srand(time(NULL));
@@ -149,6 +221,8 @@ int main(int argc, char const *argv[])
             return 1;
         head = new node;
         head->value = fin.get();
+        head->level = 1;
+        head->width = 1;
         while (fin.peek() != EOF)
         {
             insertNode(head, fin.get());
@@ -171,6 +245,8 @@ int main(int argc, char const *argv[])
         //generate random number add build a tree
         head = new node;
         head->value = rand() % 100 + 1;
+        head->level = 1;
+        head->width = 1;
         for (int i = 1; i < number_node; i++)
             insertNode(head, rand() % 100 + 1);
     }
@@ -180,10 +256,10 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
-    //count the level of the tree
-    level_tree = getLevel(head)
-    //print out answer
-    cout << "Level:     " << level_tree ;
+    cout << endl;
+    queue<node *> output;
+    bfs(head, output);
+    drawTree(output);
     cout << endl
          << "Preorder:  ";
     preorder(head);
