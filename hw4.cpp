@@ -44,7 +44,7 @@ int level_tree = 0;
 
 //insertnode
 //level and width for save postion in tree in node
-//level and width have a default value 1 for check from head
+//level and width have a default value 1 because the first check is check from head
 void insertNode(node *current, int value, int level = 1, int width = 1)
 {
     if (value < current->value)
@@ -80,9 +80,13 @@ void insertNode(node *current, int value, int level = 1, int width = 1)
         }
     }
     else //value == currrent->value
-        return;
+    {
+        //rerandom a number and insert to tree
+        insertNode(head, rand() % 100 + 1);
+    }
 };
 
+//count the height of the (sub)tree from given node
 int getLevel(node *cur_node)
 {
     if (cur_node == NULL)
@@ -104,6 +108,7 @@ int getLevel(node *cur_node)
     }
 }
 
+//draw a BST from a node list(queue)
 //unit space is 2 char (because every node have maxninum 2 number)
 void drawTree(queue<node *> list)
 {
@@ -111,8 +116,8 @@ void drawTree(queue<node *> list)
 
     for (int level = 1; level <= total_level; level++)
     {
-
-        if (level != total_level) //deal with special case on leaf level for draw '_' before first node every level
+        //deal with special case on leaf level for draw '_' before first node every level
+        if (level != total_level) 
             cout << string(power_sp((total_level + 1) - level) * 2, '_');
 
         for (int width = 1; width <= power(2, level - 1); width++)
@@ -126,9 +131,10 @@ void drawTree(queue<node *> list)
             {
                 cout << "  ";
             }
-
+            //a error checker
             if (width > power(2, level - 1))
                 break;
+
             cout << string(power_sp((total_level + 1) - level + 1) * 2, '_');
         }
         cout << endl;
@@ -165,7 +171,8 @@ void postorder(node *current)
     cout << current->value << " ";
 };
 
-//print out the triversal sequence in breath first search
+//use function overloading to do simlar task from different input parameter
+//usage 1: print out the triversal sequence in breath first search
 void bfs(node *current)
 {
     queue<node *> bfs_q;
@@ -182,6 +189,8 @@ void bfs(node *current)
     }
 };
 
+//use function overloading to do simlar task from different input parameter
+//usage 2: push all node in a queue that input order is the triversal sequence in breath first search
 void bfs(node *current, queue<node *> &output)
 {
     queue<node *> bfs_q;
@@ -259,6 +268,7 @@ int main(int argc, char const *argv[])
         return 1;
     }
 
+    //print out all answer
     cout << endl;
     queue<node *> output;
     bfs(head, output);
