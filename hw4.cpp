@@ -53,14 +53,14 @@ void insertNode(node *current, int value, int level = 1, int width = 1)
         {
             current->left = new node;
             current->left->value = value;
-            current->left->width = 2 * width - 1;
+            current->left->width = (2 * width) - 1;
             current->left->level = ++level;
             return;
         }
         else
         {
             level++;
-            insertNode(current->left, value, level, 2 * (level - 1) - 1);
+            insertNode(current->left, value, level, (2 * width) - 1);
         }
     }
     else if (value > current->value)
@@ -76,7 +76,7 @@ void insertNode(node *current, int value, int level = 1, int width = 1)
         else
         {
             level++;
-            insertNode(current->right, value, level, 2 * (level - 1));
+            insertNode(current->right, value, level, 2 * width);
         }
     }
     else //value == currrent->value
@@ -111,20 +111,23 @@ void drawTree(queue<node *> list)
 
     for (int level = 1; level <= total_level; level++)
     {
-        
-        if(level != total_level)//deal with special case for leaf level
+
+        if (level != total_level) //deal with special case on leaf level for draw '_' before first node every level
             cout << string(power_sp((total_level + 1) - level) * 2, '_');
 
         for (int width = 1; width <= power(2, level - 1); width++)
         {
-            if (list.empty() || list.front()->width != width || list.front()->level != level)
-                cout << "  ";
-            else
+            if (!list.empty() && list.front()->width == width && list.front()->level == level)
             {
                 cout << setw(2) << list.front()->value;
                 list.pop();
             }
-            if (width == power(2, level - 1))
+            else
+            {
+                cout << "  ";
+            }
+
+            if (width > power(2, level - 1))
                 break;
             cout << string(power_sp((total_level + 1) - level + 1) * 2, '_');
         }
